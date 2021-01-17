@@ -11,29 +11,35 @@
   <!-- 主体区域 -->
   <el-container>
     <!-- 侧边栏 -->
-    <el-aside width="200px">
+    <el-aside :width="isCollapse ? '64px' : '200px'">
+      <div class="toggle-button" @click="toggleCollapse">|||</div>
       <!-- 侧边栏菜单区域 -->
       <el-menu
       background-color="#313743"
       text-color="#fff"
-      active-text-color="#ffd04b">
+      active-text-color="#379aff"
+      :unique-opened="true"
+      :collapse="isCollapse"
+      :collapse-transition="false"
+      router
+      >
       <!-- 一级菜单 -->
-      <el-submenu index="1">
+      <el-submenu :index="item.id+ ''" v-for="item in menuList" :key="item.id">
         <!-- 一级菜单的模板区域 -->
         <template slot="title">
           <!-- 图标 -->
-          <i class="el-icon-location"></i>
+          <i :class="iconsObj[item.id]"></i>
           <!-- 文本 -->
-          <span>导航一</span>
+          <span>{{item.authName}}</span>
         </template>
 
       <!-- 二级菜单 -->
-      <el-menu-item index="1-4-1">
+      <el-menu-item :index="'/'+ subItem.path + ''" v-for="subItem in item.children" :key="subItem.id">
         <template slot="title">
           <!-- 图标 -->
-          <i class="el-icon-location"></i>
+          <i class="el-icon-menu"></i>
           <!-- 文本 -->
-          <span>导航一</span>
+          <span>{{subItem.authName}}</span>
         </template>
       </el-menu-item>
       </el-submenu>
@@ -41,7 +47,10 @@
     </el-menu>
     </el-aside>
     <!-- 右侧主体 -->
-    <el-main>Main</el-main>
+    <el-main>
+      <!-- 路由占位符 -->
+      <router-view></router-view>
+    </el-main>
   </el-container>
 </el-container>
 </template>
@@ -50,14 +59,39 @@
 export default {
   data() {
     return {
-
+      // 左侧菜单数据
+      menuList: [],
+      iconsObj: {
+        '125': 'iconfont icon-user',
+        '103': 'iconfont icon-tijikongjian',
+        '101': 'iconfont icon-shangpin',
+        '102': 'iconfont icon-danju',
+        '145': 'iconfont icon-baobiao'
+      },
+      //  是否折叠
+      isCollapse: false
     }
+  },
+  created() {
+    this.getMenuList()
   },
   methods: {
     logout() {
       window.sessionStorage.clear()
       this.$router.push('/login')
-    }
+    },
+    // 获取所有的菜单
+   async getMenuList() {
+      const {data: res} = await this.$http.get('menus')
+      console.log(res)
+      // 如果获取失败  就提示
+      if(res.meta.status!==200) return this.$message.console.error(res.meta.msg)
+      this.menuList = res.data
+  },
+  // 点击折叠按钮
+  toggleCollapse() {
+    this.isCollapse = !this.isCollapse
+  }
   },
 }
 </script>
@@ -89,5 +123,20 @@ export default {
 }
 .el-main {
   background-color: #eaedf1;
+}
+.iconfont {
+  margin-right: 10px;
+}
+.el-menu {
+  border-right: 0;
+}
+.toggle-button {
+  color: #fff;
+  text-align: center;
+  font-size: 10px;
+  line-height: 24px;
+  background-color: #495065;
+  letter-spacing: 0.2em;
+  cursor: pointer;
 }
 </style>
