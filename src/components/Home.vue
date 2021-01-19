@@ -22,6 +22,7 @@
       :collapse="isCollapse"
       :collapse-transition="false"
       router
+      :default-active="activePath"
       >
       <!-- 一级菜单 -->
       <el-submenu :index="item.id+ ''" v-for="item in menuList" :key="item.id">
@@ -34,7 +35,10 @@
         </template>
 
       <!-- 二级菜单 -->
-      <el-menu-item :index="'/'+ subItem.path + ''" v-for="subItem in item.children" :key="subItem.id">
+      <el-menu-item :index="'/'+ subItem.path + ''"
+      v-for="subItem in item.children"
+      :key="subItem.id"
+      @click="savaNavState('/' + subItem.path)">
         <template slot="title">
           <!-- 图标 -->
           <i class="el-icon-menu"></i>
@@ -69,11 +73,14 @@ export default {
         '145': 'iconfont icon-baobiao'
       },
       //  是否折叠
-      isCollapse: false
+      isCollapse: false,
+      // 被激活的链接地址
+      avtivePath: ''
     }
   },
   created() {
     this.getMenuList()
+    this.activePath = window.sessionStorage.getItem('activePath')
   },
   methods: {
     logout() {
@@ -83,7 +90,7 @@ export default {
     // 获取所有的菜单
    async getMenuList() {
       const {data: res} = await this.$http.get('menus')
-      console.log(res)
+      // console.log(res)
       // 如果获取失败  就提示
       if(res.meta.status!==200) return this.$message.console.error(res.meta.msg)
       this.menuList = res.data
@@ -91,6 +98,11 @@ export default {
   // 点击折叠按钮
   toggleCollapse() {
     this.isCollapse = !this.isCollapse
+  },
+  // 保存链接的激活状态
+  savaNavState(activePath) {
+    window.sessionStorage.setItem('activePath',activePath)
+    this.activePath = activePath
   }
   },
 }
